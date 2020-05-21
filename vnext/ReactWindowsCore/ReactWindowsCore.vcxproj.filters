@@ -231,10 +231,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-    <ClInclude Include="WinRTWebSocketResource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
   <ItemGroup>
     <None Include="etw\react_native_windows.man">
       <Filter>etw</Filter>
