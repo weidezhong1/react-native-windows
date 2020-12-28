@@ -5,6 +5,13 @@
       values: 
       - PullRequest 
       - Continuous 
+    - name: version
+      type: object
+      default:
+        major: 0
+        minor: 0
+        patch: 0
+        prerelease: pr-$(Build.BuildId)
     - name: buildMatrix
       type: object
       default:
@@ -64,6 +71,8 @@
                 - checkout: self
                   clean: false
                   submodules: false
+
+                - template: ../templates/apply-published-version-vars.yml
 
                 - template: ../templates/build-rnw.yml
                   parameters:

@@ -73,6 +73,8 @@ jobs:
         clean: false
         submodules: false
 
+      - template: ../templates/apply-published-version-vars.yml
+
       - template: ../templates/build-rnw.yml
         parameters:
           yarnBuildCmd: build
