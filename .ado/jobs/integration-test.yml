@@ -115,14 +115,14 @@ jobs:
       - task: PublishPipelineArtifact@1
         displayName: Upload targets
         inputs:
-          artifactName: Targets - IntegrationTest-$(System.JobAttempt)
+          artifactName: Targets - IntegrationTest-$(BuildPlatform)-$(System.JobAttempt)
           targetPath: packages/IntegrationTest/windows/$(BuildPlatform)/Debug/integrationtest
         condition: failed()
 
       - task: PublishPipelineArtifact@1
         displayName: Upload screenshots
         inputs:
-          artifactName: Screenshots - IntegrationTest-$(System.JobAttempt)
+          artifactName: Screenshots - IntegrationTest-$(BuildPlatform)-$(System.JobAttempt)
           targetPath: $(Build.StagingDirectory)/Screenshots
         condition: succeededOrFailed()
 
