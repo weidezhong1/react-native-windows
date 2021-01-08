@@ -18,10 +18,20 @@ jobs:
 
       - template: ../templates/yarn-install.yml
 
+      - script: |
+          echo ##vso[task.setvariable variable=BeachBallBranchName]$(System.PullRequest.TargetBranch)
+        displayName: Enable No-Publish
+        condition: eq('$(Build.Reason)', 'PullRequest')
+
+      - script: |
+          echo ##vso[task.setvariable variable=BeachBallBranchName]$(Build.SourceBranchName)
+        displayName: Enable No-Publish
+        condition: ne('$(Build.Reason)', 'PullRequest')
+
       - task: CmdLine@2
         displayName: Check for change files
         inputs:
-          script: npx --no-install beachball check --branch origin/$(System.PullRequest.TargetBranch) --changehint "Run `yarn change` from root of repo to generate a change file."
+          script: npx --no-install beachball check --branch origin/$(BeachBallBranchName) --changehint "Run `yarn change` from root of repo to generate a change file."
 
       - task: CmdLine@2
         displayName: yarn build
