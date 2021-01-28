@@ -3,9 +3,8 @@ parameters:
     type: string
     default: PullRequest
     values: 
-     - PullRequest 
+     - PullRequest
      - Continuous
-     - ContinuousWithArm
   - name: buildNuGetOnly
     type: boolean
     default: false

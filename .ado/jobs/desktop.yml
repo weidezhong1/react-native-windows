@@ -38,29 +38,46 @@ jobs:
 
     strategy:
       matrix:
+        # Start Continuous only
+        ${{ if eq(parameters.buildEnvironment, 'Continuous') }}:
+          ArmDebug:
+            BuildConfiguration: Debug
+            BuildPlatform: ARM
+            EnableTests: false
+          ArmRelease:
+            BuildConfiguration: Release
+            BuildPlatform: ARM
+            EnableTests: false
+        # End Continuous only
         Arm64Debug:
           BuildConfiguration: Debug
           BuildPlatform: ARM64
+            EnableTests: true
         # Start Continuous only
         ${{ if eq(parameters.buildEnvironment, 'Continuous') }}:
           Arm64Release:
             BuildConfiguration: Release
             BuildPlatform: ARM64
+            EnableTests: true
         # End Continuous only
         X64Debug:
           BuildConfiguration: Debug
           BuildPlatform: x64
+          EnableTests: true
         X64Release:
           BuildConfiguration: Release
           BuildPlatform: x64
+          EnableTests: true
         X86Debug:
           BuildConfiguration: Debug
           BuildPlatform: x86
+          EnableTests: true
         # Start Continuous only
         ${{ if eq(parameters.buildEnvironment, 'Continuous') }}:
           X86Release:
             BuildConfiguration: Release
             BuildPlatform: x86
+            EnableTests: true
         # End Continuous only
     pool:
       vmImage: $(VmImage)
@@ -86,70 +103,72 @@ jobs:
           buildPlatform: $(BuildPlatform)
           buildConfiguration: $(BuildConfiguration)
 
-      - task: CmdLine@2
-        displayName: Build react-native-win32 RNTester bundle
-        inputs:
-          script: yarn bundle
-          workingDirectory: packages/react-native-win32
-        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Debug'), eq(variables['BuildPlatform'], 'x64'))
+      - ${{ if eq(variables['EnableTests'], 'true') }}:
+        - task: CmdLine@2
+          displayName: Build react-native-win32 RNTester bundle
+          inputs:
+            script: yarn bundle
+            workingDirectory: packages/react-native-win32
+          condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Debug'), eq(variables['BuildPlatform'], 'x64'))
 
-      - powershell: |
-          Write-Debug "Using expression $($env:GOOGLETESTADAPTERPATHEXPRESSION)"
-          Write-Host "##vso[task.setvariable variable=GoogleTestAdapterPath]$(Invoke-Expression $env:GOOGLETESTADAPTERPATHEXPRESSION)"
-          Write-Host "Set environment variable to ($env:GoogleTestAdapterPath)"
-        displayName: Set GoogleTestAdapterPath
+        - powershell: |
+            Write-Debug "Using expression $($env:GOOGLETESTADAPTERPATHEXPRESSION)"
+            Write-Host "##vso[task.setvariable variable=GoogleTestAdapterPath]$(Invoke-Expression $env:GOOGLETESTADAPTERPATHEXPRESSION)"
+            Write-Host "Set environment variable to ($env:GoogleTestAdapterPath)"
+          displayName: Set GoogleTestAdapterPath
 
-      - task: VSTest@2
-        displayName: Run Desktop Unit Tests
-        timeoutInMinutes: 5 # Set smaller timeout , due to hangs
-        inputs:
-          testSelector: testAssemblies
-          testAssemblyVer2: |
-            React.Windows.Desktop.UnitTests/React.Windows.Desktop.UnitTests.dll
-            ReactCommon.UnitTests/ReactCommon.UnitTests.exe
-          pathtoCustomTestAdapters: $(GoogleTestAdapterPath)
-          searchFolder: $(Build.SourcesDirectory)/vnext/target/$(BuildPlatform)/$(BuildConfiguration)
-          testFiltercriteria: $(Desktop.UnitTests.Filter)
-          runTestsInIsolation: true
-          platform: $(BuildPlatform)
-          configuration: $(BuildConfiguration)
-          publishRunAttachments: true
-          collectDumpOn: onAbortOnly
-          vsTestVersion: latest
+        - task: VSTest@2
+          displayName: Run Desktop Unit Tests
+          timeoutInMinutes: 5 # Set smaller timeout , due to hangs
+          inputs:
+            testSelector: testAssemblies
+            testAssemblyVer2: |
+              React.Windows.Desktop.UnitTests/React.Windows.Desktop.UnitTests.dll
+              ReactCommon.UnitTests/ReactCommon.UnitTests.exe
+            pathtoCustomTestAdapters: $(GoogleTestAdapterPath)
+            searchFolder: $(Build.SourcesDirectory)/vnext/target/$(BuildPlatform)/$(BuildConfiguration)
+            testFiltercriteria: $(Desktop.UnitTests.Filter)
+            runTestsInIsolation: true
+            platform: $(BuildPlatform)
+            configuration: $(BuildConfiguration)
+            publishRunAttachments: true
+            collectDumpOn: onAbortOnly
+            vsTestVersion: latest
 
-      - task: PowerShell@2
-        displayName: Set up test servers
-        inputs:
-          targetType: filePath # filePath | inline
-          filePath: $(Build.SourcesDirectory)\vnext\Scripts\Tfs\Start-TestServers.ps1
-          arguments: -SourcesDirectory $(Build.SourcesDirectory)\vnext -Preload -SleepSeconds 120
-        condition: and(succeeded(), ne(variables['Desktop.IntegrationTests.SkipRNTester'], 'true'), ne(variables['BuildConfiguration'], 'Debug'))
+        - task: PowerShell@2
+          displayName: Set up test servers
+          inputs:
+            targetType: filePath # filePath | inline
+            filePath: $(Build.SourcesDirectory)\vnext\Scripts\Tfs\Start-TestServers.ps1
+            arguments: -SourcesDirectory $(Build.SourcesDirectory)\vnext -Preload -SleepSeconds 120
+          condition: and(succeeded(), ne(variables['Desktop.IntegrationTests.SkipRNTester'], 'true'), ne(variables['BuildConfiguration'], 'Debug'))
 
-      - task: PowerShell@2
-        displayName: Check the metro bundle server
-        inputs:
-          targetType: 'inline'
-          script: Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=windows&dev=true"
-        condition: and(succeeded(), ne(variables['Desktop.IntegrationTests.SkipRNTester'], 'true'), ne(variables['BuildConfiguration'], 'Debug'))
+        - task: PowerShell@2
+          displayName: Check the metro bundle server
+          inputs:
+            targetType: 'inline'
+            script: Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8081/IntegrationTests/IntegrationTestsApp.bundle?platform=windows&dev=true"
+          condition: and(succeeded(), ne(variables['Desktop.IntegrationTests.SkipRNTester'], 'true'), ne(variables['BuildConfiguration'], 'Debug'))
 
-      - task: VSTest@2
-        displayName: Run Desktop Integration Tests
-        inputs:
-          testSelector: testAssemblies
-          testAssemblyVer2: React.Windows.Desktop.IntegrationTests\React.Windows.Desktop.IntegrationTests.dll
-          searchFolder: $(Build.SourcesDirectory)\vnext\target\$(BuildPlatform)\$(BuildConfiguration)
-          testFiltercriteria: $(Desktop.IntegrationTests.Filter)
-          runTestsInIsolation: true
-          platform: $(BuildPlatform)
-          configuration: $(BuildConfiguration)
-          publishRunAttachments: true
-          collectDumpOn: onAbortOnly
-          vsTestVersion: latest
-          otherConsoleOptions: '/blame -- RunConfiguration.TestSessionTimeout=300000'
-        # Suspected debug assert in TestRunner hanging tests randomly. Run only on Release for now.
-        condition: and(succeeded(), ne(variables['BuildConfiguration'], 'Debug'))
+        - task: VSTest@2
+          displayName: Run Desktop Integration Tests
+          inputs:
+            testSelector: testAssemblies
+            testAssemblyVer2: React.Windows.Desktop.IntegrationTests\React.Windows.Desktop.IntegrationTests.dll
+            searchFolder: $(Build.SourcesDirectory)\vnext\target\$(BuildPlatform)\$(BuildConfiguration)
+            testFiltercriteria: $(Desktop.IntegrationTests.Filter)
+            runTestsInIsolation: true
+            platform: $(BuildPlatform)
+            configuration: $(BuildConfiguration)
+            publishRunAttachments: true
+            collectDumpOn: onAbortOnly
+            vsTestVersion: latest
+            otherConsoleOptions: '/blame -- RunConfiguration.TestSessionTimeout=300000'
+          # Suspected debug assert in TestRunner hanging tests randomly. Run only on Release for now.
+          condition: and(succeeded(), ne(variables['BuildConfiguration'], 'Debug'))
 
-      - template: ../templates/stop-packagers.yml
+        - template: ../templates/stop-packagers.yml
+      # End: ${{ if eq(variables['EnableTests'], 'true') }}: 
 
       - template: ../templates/publish-build-artifacts-for-nuget.yml
         parameters:
