@@ -1,6 +1,7 @@
 // @ts-check
 const fs = require('fs'); 
 const path = require('path');
+const process = require('process');
 const child_process = require('child_process');
 const semver = require('semver');
 
@@ -10,11 +11,31 @@ const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
 // Record commit number, so that additional build tasks can record that commit in the NuGet
 const commitId = child_process.execSync(`git rev-list HEAD -n 1`).toString().trim();
 
+const buildEnvironment = process.argv[2];
+let isPr = buildEnvironment === "PullRequest";
+let isCi = buildEnvironment === "Continuous"
+if (!isPr && !isCi) {
+  throw new Error("Must pass argument indicating if this is for a 'PullRequest' or 'Continuous");
+}
+const buildId = process.argv[3];
+if (process.argv[3] == undefined) {
+  throw new Error("Missing argument for the buildid")
+}
+
+if (isPr) {
+  if (!pkgJson.version.contains('-')) {
+    pkgJson.version += "-";
+  }
+
+  pkgJson.version += `.pr${buildId}`;
+}
+
 const versionEnvVars = {
   RNW_PKG_VERSION_STR: pkgJson.version,
   RNW_PKG_VERSION_MAJOR: semver.major(pkgJson.version),
   RNW_PKG_VERSION_MINOR: semver.minor(pkgJson.version),
   RNW_PKG_VERSION_PATCH: semver.patch(pkgJson.version),
+  RNW_PKG_VERSION_BUILD: buildId,
   npmVersion: pkgJson.version,
   publishCommitId: commitId,
   reactDevDependency: pkgJson.devDependencies['react'],
@@ -30,6 +51,7 @@ console.log(`##vso[task.setvariable variable=RNW_PKG_VERSION_STR]${versionEnvVar
 console.log(`##vso[task.setvariable variable=RNW_PKG_VERSION_MAJOR]${versionEnvVars.RNW_PKG_VERSION_MAJOR}`);
 console.log(`##vso[task.setvariable variable=RNW_PKG_VERSION_MINOR]${versionEnvVars.RNW_PKG_VERSION_MINOR}`);
 console.log(`##vso[task.setvariable variable=RNW_PKG_VERSION_PATCH]${versionEnvVars.RNW_PKG_VERSION_PATCH}`);
+console.log(`##vso[task.setvariable variable=RNW_PKG_VERSION_BUILD]${versionEnvVars.RNW_PKG_VERSION_BUILD}`);
 
 // Set other version related variables used by CI
 console.log(`##vso[task.setvariable variable=npmVersion]${versionEnvVars.npmVersion}`);
@@ -46,6 +68,7 @@ console.log("##vso[task.setvariable variable=RNW_PKG_VERSION_STR]${versionEnvVar
 console.log("##vso[task.setvariable variable=RNW_PKG_VERSION_MAJOR]${versionEnvVars.RNW_PKG_VERSION_MAJOR}");
 console.log("##vso[task.setvariable variable=RNW_PKG_VERSION_MINOR]${versionEnvVars.RNW_PKG_VERSION_MINOR}");
 console.log("##vso[task.setvariable variable=RNW_PKG_VERSION_PATCH]${versionEnvVars.RNW_PKG_VERSION_PATCH}");
+console.log("##vso[task.setvariable variable=RNW_PKG_VERSION_BUILD]${versionEnvVars.RNW_PKG_VERSION_BUILD}");
 console.log("##vso[task.setvariable variable=npmVersion]${versionEnvVars.npmVersion}");
 console.log("##vso[task.setvariable variable=publishCommitId]${versionEnvVars.publishCommitId}");
 console.log("##vso[task.setvariable variable=reactDevDependency]${versionEnvVars.reactDevDependency}");

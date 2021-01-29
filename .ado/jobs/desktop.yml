@@ -43,41 +43,41 @@ jobs:
           ArmDebug:
             BuildConfiguration: Debug
             BuildPlatform: ARM
-            EnableTests: false
+            RunTests: false # We don't have Arm agents
           ArmRelease:
             BuildConfiguration: Release
             BuildPlatform: ARM
-            EnableTests: false
+            RunTests: false # We don't have Arm agents
         # End Continuous only
         Arm64Debug:
           BuildConfiguration: Debug
           BuildPlatform: ARM64
-            EnableTests: true
+            RunTests: true
         # Start Continuous only
         ${{ if eq(parameters.buildEnvironment, 'Continuous') }}:
           Arm64Release:
             BuildConfiguration: Release
             BuildPlatform: ARM64
-            EnableTests: true
+            RunTests: true
         # End Continuous only
         X64Debug:
           BuildConfiguration: Debug
           BuildPlatform: x64
-          EnableTests: true
+          RunTests: true
         X64Release:
           BuildConfiguration: Release
           BuildPlatform: x64
-          EnableTests: true
+          RunTests: true
         X86Debug:
           BuildConfiguration: Debug
           BuildPlatform: x86
-          EnableTests: true
+          RunTests: true
         # Start Continuous only
         ${{ if eq(parameters.buildEnvironment, 'Continuous') }}:
           X86Release:
             BuildConfiguration: Release
             BuildPlatform: x86
-            EnableTests: true
+            RunTests: true
         # End Continuous only
     pool:
       vmImage: $(VmImage)
@@ -103,7 +103,7 @@ jobs:
           buildPlatform: $(BuildPlatform)
           buildConfiguration: $(BuildConfiguration)
 
-      - ${{ if eq(variables['EnableTests'], 'true') }}:
+      - ${{ if eq(variables['RunTests'], 'true') }}:
         - task: CmdLine@2
           displayName: Build react-native-win32 RNTester bundle
           inputs:
@@ -168,7 +168,7 @@ jobs:
           condition: and(succeeded(), ne(variables['BuildConfiguration'], 'Debug'))
 
         - template: ../templates/stop-packagers.yml
-      # End: ${{ if eq(variables['EnableTests'], 'true') }}: 
+      # End: ${{ if eq(variables['RunTests'], 'true') }}: 
 
       - template: ../templates/publish-build-artifacts-for-nuget.yml
         parameters:

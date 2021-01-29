@@ -25,6 +25,8 @@ stages:
               filePath: .ado/scripts/shouldSkipPRBuild.ps1
           
           - template: templates/set-version-vars.yml
+            parameters:
+              buildEnvironment: PullRequest
           - template: templates/publish-version-vars.yml
           
   - template: stages.yml
