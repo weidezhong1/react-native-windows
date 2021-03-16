@@ -188,7 +188,7 @@ FileMappingBigString::FileMappingBigString(const std::string &filenameUtf8, uint
   }
 }
 
-std::unique_ptr<const FileMappingBigString> FileMappingBigString::fromPath(const std::string &filenameUtf8) {
+__declspec(dllexport) std::unique_ptr<const FileMappingBigString> FileMappingBigString::fromPath(const std::string &filenameUtf8) {
   return std::make_unique<FileMappingBigString>(filenameUtf8);
 }
 

@@ -56,6 +56,9 @@
 #include <ReactCommon/TurboModuleBinding.h>
 #include "ChakraRuntimeHolder.h"
 
+#include <Windows.h>
+#include <delayimp.h>
+
 #if (defined(_MSC_VER) && !defined(WINRT))
 // Type only available in Desktop.
 using Microsoft::React::WebSocketModule;
@@ -331,7 +334,9 @@ InstanceImpl::InstanceImpl(
       m_devSettings(std::move(devSettings)),
       m_devManager(std::move(devManager)),
       m_innerInstance(std::make_shared<Instance>()) {
+
   // Temp set the logmarker here
+  // TODO: this is only setting the logMarker for reactCommon in react-native.
   facebook::react::ReactMarker::logTaggedMarker = logMarker;
 
 #ifdef ENABLE_ETW_TRACING

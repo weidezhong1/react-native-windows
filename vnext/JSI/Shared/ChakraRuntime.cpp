@@ -975,7 +975,8 @@ void ChakraRuntime::setupMemoryTracker() noexcept {
 std::once_flag ChakraRuntime::s_runtimeVersionInitFlag;
 uint64_t ChakraRuntime::s_runtimeVersion = 0;
 
-std::unique_ptr<facebook::jsi::Runtime> makeChakraRuntime(ChakraRuntimeArgs &&args) noexcept {
+__declspec(dllexport) std::unique_ptr<facebook::jsi::Runtime> makeChakraRuntime(ChakraRuntimeArgs&& args) noexcept
+{
   return std::make_unique<ChakraRuntime>(std::move(args));
 }
 

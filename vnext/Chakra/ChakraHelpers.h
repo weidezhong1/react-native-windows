@@ -15,7 +15,7 @@ namespace react {
 
 class MinimalChakraRuntime {
  public:
-  MinimalChakraRuntime(bool multithreaded);
+   __declspec(dllexport) MinimalChakraRuntime(bool multithreaded);
 
  private:
   std::unique_ptr<JsRuntimeHandle, std::function<void(JsRuntimeHandle *)>> runtime;
@@ -95,7 +95,7 @@ JsValueRef evaluateScript(JsValueRef script, JsValueRef sourceURL);
 
 JsValueRef evaluateScript(std::unique_ptr<const JSBigString> &&script, JsValueRef sourceURL);
 
-JsValueRef evaluateScriptWithBytecode(
+__declspec(dllexport) JsValueRef evaluateScriptWithBytecode(
     std::unique_ptr<const JSBigString> &&script,
     uint64_t scriptVersion,
     JsValueRef scriptFileName,

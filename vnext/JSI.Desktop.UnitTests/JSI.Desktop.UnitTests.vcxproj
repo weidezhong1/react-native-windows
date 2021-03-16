@@ -102,6 +102,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JSI\Desktop.ChakraCore\Desktop.ChakraCore.vcxproj">
+      <Project>{63c1e942-485c-46f9-bbe7-b8630432428e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\JSI\Desktop.Chakra\Desktop.Chakra.vcxproj">
+      <Project>{64ba1eb7-2210-4d5b-abca-a9a5183db778}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ReactCommon\ReactCommon.vcxproj">
       <Project>{A9D95A91-4DB7-4F72-BEB6-FE8A5C89BFBD}</Project>
     </ProjectReference>

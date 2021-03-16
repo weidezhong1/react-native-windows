@@ -62,7 +62,6 @@
         FOLLY_NO_CONFIG;
         GTEST_LANG_CXX11=1;
         NOMINMAX;
-        CHAKRACORE;
         RN_EXPORT=;
         JSI_EXPORT=;
         %(PreprocessorDefinitions)
@@ -122,6 +121,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Desktop\React.Windows.Desktop.vcxproj">
       <Project>{95048601-C3DC-475F-ADF8-7C0C764C10D5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\JSI\Desktop.ChakraCore\Desktop.ChakraCore.vcxproj">
+      <Project>{63c1e942-485c-46f9-bbe7-b8630432428e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\JSI\Desktop.Chakra\Desktop.Chakra.vcxproj">
+      <Project>{64ba1eb7-2210-4d5b-abca-a9a5183db778}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

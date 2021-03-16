@@ -53,7 +53,7 @@ class FileMappingBigString : public JSBigString {
     return m_fileSize;
   }
 
-  static std::unique_ptr<const FileMappingBigString> fromPath(const std::string &filenameUtf8);
+  __declspec(dllexport) static std::unique_ptr<const FileMappingBigString> fromPath(const std::string &filenameUtf8);
 
  private:
   static void fileDataDeleter(void *p) {

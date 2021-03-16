@@ -24,12 +24,12 @@ namespace react {
 
 JsErrorCode JsGetPropertyIdFromNameUtf8(_In_z_ const char *name, _Out_ JsPropertyIdRef *propertyId);
 
-JsErrorCode JsPointerToStringUtf8(
+__declspec(dllexport) JsErrorCode JsPointerToStringUtf8(
     _In_reads_(stringLength) const char *stringValue,
     _In_ size_t stringLength,
     _Out_ JsValueRef *string) noexcept;
 
-JsErrorCode JsStringToStdStringUtf8(_In_ JsValueRef stringValue, std::string &string);
+__declspec(dllexport) JsErrorCode JsStringToStdStringUtf8(_In_ JsValueRef stringValue, std::string &string);
 
 } // namespace react
 } // namespace facebook

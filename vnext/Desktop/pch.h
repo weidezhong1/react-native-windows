@@ -14,3 +14,9 @@
 #include <mutex>
 
 #include <Base/CxxReactIncludes.h>
+
+#ifndef __GNUC__
+#ifndef __unused
+#define __unused
+#endif
+#endif

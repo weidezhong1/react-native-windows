@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ByteArrayBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ChakraCoreRuntimeFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ChakraObjectRef.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ChakraRuntimeArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ChakraRuntimeFactory.h" />

@@ -20,7 +20,7 @@ struct INativeTraceHandler {
   NativeEndSection(const char *profileName, const char *args, std::chrono::nanoseconds duration) noexcept = 0;
 };
 
-void InitializeTracing(INativeTraceHandler *handler);
+__declspec(dllexport) void InitializeTracing(INativeTraceHandler *handler);
 
 } // namespace react
 } // namespace facebook

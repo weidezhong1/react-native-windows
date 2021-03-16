@@ -397,13 +397,13 @@ JsValueRef evaluateScript(std::unique_ptr<const JSBigString> &&script, JsValueRe
 #endif
 }
 
-JsValueRef evaluateScriptWithBytecode(
+__declspec(dllexport) JsValueRef evaluateScriptWithBytecode(
     std::unique_ptr<const JSBigString> &&script,
     [[maybe_unused]] uint64_t scriptVersion,
     JsValueRef scriptFileName,
     [[maybe_unused]] std::string &&bytecodeFileName,
     [[maybe_unused]] bool asyncBytecodeGeneration) {
-#if defined(WINRT)
+#if defined(WINRT) || defined(USE_EDGEMODE_JSRT)
   // TODO: yicyao
   // ChakraRT does not support the JsRunSerialized() API.
   // Hence for UWP implementation, we fall back to using the original source

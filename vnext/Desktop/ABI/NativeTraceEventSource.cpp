@@ -49,7 +49,7 @@ private:
 g_internalHandler;
 }
 
-uint32_t NativeTraceEventSource::InitializeTracing(::winrt::facebook::react::INativeTraceHandler const &handler) {
+__declspec(dllexport) uint32_t NativeTraceEventSource::InitializeTracing(::winrt::facebook::react::INativeTraceHandler const &handler) {
   g_abiHandler = handler;
   ::facebook::react::InitializeTracing(&g_internalHandler);
   return ++g_abiHandlerRegistrationCookie;

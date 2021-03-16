@@ -31,7 +31,7 @@ JsErrorCode JsGetPropertyIdFromNameUtf8(_In_z_ const char *name, _Out_ JsPropert
   return JsGetPropertyIdFromName(wname.get(), propertyId);
 }
 
-JsErrorCode JsPointerToStringUtf8(
+__declspec(dllexport) JsErrorCode JsPointerToStringUtf8(
     _In_reads_(stringLength) const char *stringValue,
     _In_ size_t stringLength,
     _Out_ JsValueRef *string) noexcept {
@@ -50,7 +50,7 @@ JsErrorCode JsPointerToStringUtf8(
 #endif
 }
 
-JsErrorCode JsStringToStdStringUtf8(_In_ JsValueRef stringValue, std::string &string) {
+__declspec(dllexport) JsErrorCode JsStringToStdStringUtf8(_In_ JsValueRef stringValue, std::string &string) {
   const wchar_t *wstr;
   size_t wstrLen;
   JsErrorCode err = JsStringToPointer(stringValue, &wstr, &wstrLen);

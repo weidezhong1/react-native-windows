@@ -36,11 +36,15 @@ namespace react {
 
 namespace JSNativeHooks {
 
+__declspec(dllexport) void SetLogTaggedMarker(facebook::react::ReactMarker::LogTaggedMarker logTaggedMarkerIn);
+
 using LoggingHook = void (*)(RCTLogLevel level, const char *);
 extern LoggingHook loggingHook;
+__declspec(dllexport) void SetLoggingHook(LoggingHook myLoggingHook);
 
 using NowHook = double (*)();
 extern NowHook nowHook;
+__declspec(dllexport) void SetNowHook(NowHook myNowHook);
 
 JsValueRef __stdcall nowHookJNF(
     JsValueRef function,

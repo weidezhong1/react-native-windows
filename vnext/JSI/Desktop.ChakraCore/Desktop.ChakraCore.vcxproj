@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.200316.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200316.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
@@ -20,9 +28,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E0D269B4-D7F0-4C4E-92CD-B2C06109A2BB}</ProjectGuid>
-    <ProjectName>React.Windows.Desktop.IntegrationTests</ProjectName>
-    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <ProjectGuid>{63C1E942-485C-46F9-BBE7-B8630432428E}</ProjectGuid>
+    <ProjectName>JSI.Desktop.ChakraCore</ProjectName>
     <USE_V8>true</USE_V8>
     <V8AppPlatform>win32</V8AppPlatform>
   </PropertyGroup>
@@ -30,7 +37,6 @@
   <Import Project="$(ReactNativeWindowsDir)PropertySheets\React.Cpp.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <!-- Include Warnings.props after Microsoft.Cpp.props to change default WarningLevel -->
@@ -38,118 +44,130 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\Shared\JSI.Shared.vcxitems" Label="Shared" />
+    <Import Project="..\..\Chakra\Chakra.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(ReactNativeWindowsDir);$(ReactNativeWindowsDir)Common;$(ReactNativeWindowsDir)stubs;$(FollyDir);$(ReactNativeDir)\ReactCommon;$(ReactNativeDir)ReactCommon\callinvoker;$(JSI_Source);$(ReactNativeWindowsDir)Shared;$(ReactNativeWindowsDir)include\Shared;$(ReactNativeWindowsDir)Desktop;$(ReactNativeWindowsDir)IntegrationTests;$(ReactNativeWindowsDir)JSI\Shared;$(MSBuildProjectDirectory);$(IncludePath)</IncludePath>
+    <IncludePath>$(ReactNativeWindowsDir);$(ReactNativeWindowsDir)Common;$(FollyDir);$(ReactNativeWindowsDir)stubs;$(MSBuildProjectDirectory);$(ReactNativeWindowsDir)ReactWindowsCore;$(ReactNativeWindowsDir)\ReactWindowsCore\tracing;$(ReactNativeWindowsDir)include\ReactWindowsCore;$(ReactNativeDir)\ReactCommon;$(ReactNativeWindowsDir)JSI\Shared;$(JSI_Source);$(ReactNativeDir)\ReactCommon\callinvoker;$(IncludePath)</IncludePath>
+    <LinkIncremental>true</LinkIncremental>
+    <!--
+    Prevents Microsoft.Windows.CppWinRT.props from adding WindowsApp.lib reference, see
+    WindowsApp_downleve.lib reference below.
+    -->
+    <CppWinRTLibs>false</CppWinRTLibs>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <SDLCheck>true</SDLCheck>
-      <!-- See https://stackoverflow.com/questions/42847103/stdtr1-with-visual-studio-2017. -->
+      <!--
+        BOOST_ASIO_HAS_IOCP - Force unique layout/size for boost::asio::basic_stream_socket<> subtypes.
+        REACTWINDOWS_BUILD - building with REACTWINDOWS_API as dll exports
+      -->
       <PreprocessorDefinitions>
+        REACTWINDOWS_BUILD;
         BOOST_ASIO_HAS_IOCP;
+        _WINSOCK_DEPRECATED_NO_WARNINGS;
         _WIN32_WINNT=$(WinVer);
         WIN32;
         _WINDOWS;
+        _USRDLL;
         FOLLY_NO_CONFIG;
         NOMINMAX;
         _HAS_AUTO_PTR_ETC;
         CHAKRACORE;
-        RN_PLATFORM=windesktop;
         RN_EXPORT=;
-        JSI_EXPORT=;
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
-      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <UseFullPaths>true</UseFullPaths>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:strictStrings</AdditionalOptions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalOptions>-minpdbpathlen:256</AdditionalOptions>
       <!--
         comsuppw.lib  - _com_util::ConvertStringToBSTR
-        delayimp.lib  -
+        Winhttp.lib   - WebSocket resource implementation
       -->
       <AdditionalDependencies>
         comsuppw.lib;
-        delayimp.lib;
         Shlwapi.lib;
         Version.lib;
+        Winhttp.lib;
         %(AdditionalDependencies)
       </AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!--
+      Replaces the WindowsApp.lib link reference in Microsoft.Windows.CppWinRT.props until
+      we have a better solution for handling the absence of WinRT string and error DLLs on Win7.
+      -->
+      <AdditionalDependencies>WindowsApp_downlevel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>ChakraCore.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
-  <Import Project="$(ReactNativeWindowsDir)\PropertySheets\ReactCommunity.cpp.props" />
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <Link>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM64'">
+    <Link>
+      <ModuleDefinitionFile>react-native-win32.x64.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="('$(Platform)'=='Win32' OR '$(Platform)'=='x86')">
+    <Link>
+      <ModuleDefinitionFile>react-native-win32.x86.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ChakraRuntimeHolder.cpp" />
-    <ClCompile Include="HttpResourceIntegrationTests.cpp" />
-    <ClCompile Include="RNTesterIntegrationTests.cpp" />
-    <ClCompile Include="DesktopTestInstance.cpp" />
-    <ClCompile Include="DesktopTestRunner.cpp" />
-    <ClCompile Include="WebSocketIntegrationTest.cpp" />
-    <ClCompile Include="WebSocketModuleIntegrationTest.cpp" />
-    <ClCompile Include="WebSocketResourcePerformanceTests.cpp" />
+    <ClCompile Include="ChakraJsiRuntime_core.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Desktop.DLL\React.Windows.Desktop.DLL.vcxproj">
-      <Project>{88bab0fa-e1ac-4da7-a30c-f91702a8eadb}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\IntegrationTests\React.Windows.IntegrationTests.vcxproj">
-      <Project>{700A84FD-F92A-43F1-8D06-B0E0745DF9B5}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\JSI\Desktop.ChakraCore\Desktop.ChakraCore.vcxproj">
-      <Project>{63c1e942-485c-46f9-bbe7-b8630432428e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\JSI\Desktop.Chakra\Desktop.Chakra.vcxproj">
-      <Project>{64ba1eb7-2210-4d5b-abca-a9a5183db778}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Test\React.Windows.Test.vcxproj">
-      <Project>{cd0415c6-d908-4212-9481-49be41f58d27}</Project>
-    </ProjectReference>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
+  <PropertyGroup>
+    <V8JSI_NODLLCOPY />
+  </PropertyGroup>
   <ItemGroup>
-    <!--
-    Used by the 'CopyFilesToOutputDirectory' target (more specifically, its '_CopyFilesMarkedCopyLocal' dependency')
-    to co-locate dependencies with the test binary.
-     -->
-    <ReferenceCopyLocalPaths Include="$(BaseOutDir)\React.Windows.Desktop.DLL\react-native-win32.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ChakraRuntimeHolder.h" />
-    <ClInclude Include="DesktopTestInstance.h" />
+    <ProjectReference Include="..\..\Common\Common.vcxproj">
+      <Project>{fca38f3c-7c73-4c47-be4e-32f77fa8538d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Folly\Folly.vcxproj">
+      <Project>{A990658C-CE31-4BCC-976F-0FC6B1AF693D}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FollyWin32\FollyWin32.vcxproj">
+      <Project>{74085F13-2DDE-45E5-A0CA-927AC9D0B953}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ReactCommon\ReactCommon.vcxproj">
+      <Project>{A9D95A91-4DB7-4F72-BEB6-FE8A5C89BFBD}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets" Condition="Exists('$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets')" />
     <Import Project="$(SolutionDir)packages\boost.1.72.0.0\build\boost.targets" Condition="Exists('$(SolutionDir)packages\boost.1.72.0.0\build\boost.targets')" />
+    <Import Project="$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets" Condition="Exists('$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets')" />
     <Import Project="$(SolutionDir)packages\Microsoft.ChakraCore.vc140.1.11.20\build\native\Microsoft.ChakraCore.vc140.targets" Condition="Exists('$(SolutionDir)packages\Microsoft.ChakraCore.vc140.1.11.20\build\native\Microsoft.ChakraCore.vc140.targets')" />
     <Import Project="$(SolutionDir)packages\ChakraCore.Debugger.0.0.0.44\build\native\ChakraCore.Debugger.targets" Condition="Exists('$(SolutionDir)packages\ChakraCore.Debugger.0.0.0.44\build\native\ChakraCore.Debugger.targets')" />
-    <Import Project="$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="$(V8_Package)\build\native\ReactNative.V8JSI.Windows.targets" Condition="Exists('$(V8_Package)\build\native\ReactNative.V8JSI.Windows.targets') AND '$(USE_V8)' == 'true'" />
     <Import Project="$(SolutionDir)\packages\ReactWindows.ChakraCore.ARM64.1.11.20\build\native\ReactWindows.ChakraCore.ARM64.targets" Condition="'$(Platform)' == 'ARM64' AND Exists('$(SolutionDir)\packages\ReactWindows.ChakraCore.ARM64.1.11.20\build\native\ReactWindows.ChakraCore.ARM64.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets'))" />
     <Error Condition="!Exists('$(SolutionDir)packages\boost.1.72.0.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\boost.1.72.0.0\build\boost.targets'))" />
+    <Error Condition="!Exists('$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\ReactWindows.OpenSSL.StdCall.Static.1.0.2-p.5\build\native\ReactWindows.OpenSSL.StdCall.Static.targets'))" />
     <Error Condition="!Exists('$(SolutionDir)packages\Microsoft.ChakraCore.vc140.1.11.20\build\native\Microsoft.ChakraCore.vc140.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\Microsoft.ChakraCore.vc140.1.11.20\build\native\Microsoft.ChakraCore.vc140.targets'))" />
     <Error Condition="!Exists('$(SolutionDir)packages\ChakraCore.Debugger.0.0.0.44\build\native\ChakraCore.Debugger.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\ChakraCore.Debugger.0.0.0.44\build\native\ChakraCore.Debugger.targets'))" />
-    <Error Condition="!Exists('$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.200615.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('$(V8_Package)\build\native\ReactNative.V8JSI.Windows.targets') AND '$(USE_V8)' == 'true'" Text="$([System.String]::Format('$(ErrorText)', '$(V8_Package)\build\native\ReactNative.V8JSI.Windows.targets'))" />
     <Error Condition="'$(Platform)' == 'ARM64' AND !Exists('$(SolutionDir)\packages\ReactWindows.ChakraCore.ARM64.1.11.20\build\native\ReactWindows.ChakraCore.ARM64.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\ReactWindows.ChakraCore.ARM64.1.11.20\build\native\ReactWindows.ChakraCore.ARM64.targets'))" />
   </Target>
-  <Target Name="Test">
-    <Exec Command="$(OutDir)$(TargetFileName)" IgnoreStandardErrorWarningFormat="true" />
-  </Target>
+  <Target Name="GetTargetFileName" Returns="$(OutDir)$(TargetName).dll" />
 </Project>

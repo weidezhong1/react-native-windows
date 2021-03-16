@@ -113,7 +113,7 @@ JsNativeFunction exceptionWrapMethod() {
 
 } // anonymous namespace
 
-std::unique_ptr<JSExecutor> ChakraExecutorFactory::createJSExecutor(
+__declspec(dllexport) std::unique_ptr<JSExecutor> ChakraExecutorFactory::createJSExecutor(
     std::shared_ptr<ExecutorDelegate> delegate,
     std::shared_ptr<MessageQueueThread> jsQueue) {
 #if _DEBUG
@@ -499,7 +499,10 @@ void ChakraExecutor::loadBundle(std::unique_ptr<const JSBigString> script, std::
   JSContextHolder ctx(m_context);
 
   std::string scriptName = simpleBasename(sourceURL);
-  ReactMarker::logTaggedMarker(ReactMarker::RUN_JS_BUNDLE_START, scriptName.c_str());
+  bool hasLogger(ReactMarker::logTaggedMarker);
+  if (hasLogger) {
+    ReactMarker::logTaggedMarker(ReactMarker::RUN_JS_BUNDLE_START, scriptName.c_str());
+  }
 
   ChakraString jsSourceURL(sourceURL.c_str());
 
@@ -533,8 +536,10 @@ void ChakraExecutor::loadBundle(std::unique_ptr<const JSBigString> script, std::
     flush();
   }
 
-  ReactMarker::logMarker(ReactMarker::CREATE_REACT_CONTEXT_STOP);
-  ReactMarker::logTaggedMarker(ReactMarker::RUN_JS_BUNDLE_STOP, scriptName.c_str());
+  if (hasLogger) {
+    ReactMarker::logMarker(ReactMarker::CREATE_REACT_CONTEXT_STOP);
+    ReactMarker::logTaggedMarker(ReactMarker::RUN_JS_BUNDLE_STOP, scriptName.c_str());
+  }
 }
 
 void ChakraExecutor::setBundleRegistry(std::unique_ptr<RAMBundleRegistry> bundleRegistry) {

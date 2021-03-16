@@ -10,6 +10,12 @@
 #include <folly/Optional.h>
 #include <folly/json.h>
 
+#ifndef __GNUC__
+#ifndef __unused
+#define __unused
+#endif
+#endif
+
 #include <cxxreact\JSExecutor.h>
 
 #include "ChakraHelpers.h"
@@ -30,7 +36,7 @@ class RAMBundleRegistry;
 class ChakraExecutorFactory : public JSExecutorFactory {
  public:
   ChakraExecutorFactory(ChakraInstanceArgs &&instanceArgs) : m_instanceArgs(std::move(instanceArgs)) {}
-  virtual std::unique_ptr<JSExecutor> createJSExecutor(
+  __declspec(dllexport) virtual std::unique_ptr<JSExecutor> createJSExecutor(
       std::shared_ptr<ExecutorDelegate> delegate,
       std::shared_ptr<MessageQueueThread> jsQueue) override;
 
